@@ -1,9 +1,120 @@
+<!doctype html>
 <html>
+
 <head>
-<title>Row 🚣</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="/tailwind.css" rel="stylesheet">
+  <title>Row 🚣</title>
 </head>
 
 <body>
-Rowing!
+  <div class="min-h-screen bg-gray-100 py-1 flex flex-col justify-center sm:py-0">
+    <div class="relative py-3 sm:max-w-xl sm:mx-auto">
+      <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-14">
+        <div class="max-w-md mx-auto">
+          <div class="text-3xl leading-6 font-bold sm:text-3lg sm:leading-7">
+            Row 🚣
+          </div>
+          <div id="control" class="pt-6 grid place-items-center">
+            <div id="lastRow" class="p-2 text-gray-400">10</div>
+            <div class="p-6 border-gray-300 border rounded-lg text-4xl"><span id="thisRow">20</span> mins</div>
+            <div id="nextRow" class="p-2 text-gray-400">30</div>
+          </div>
+          <div class="divide-y divide-gray-200">
+            <div class="py-6 text-base leading-6 space-y-4 text-gray-500 sm:text-lg sm:leading-7">
+              <p>I am changing the length of my daily row each day.</p>
+              <p>Just before I start, I come here and tap on the minutes to choose the length of the upcoming session.
+              </p>
+              <p>The length in minutes alternates between:<br>10 20 30 20 10 ...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let direction = "up"; // or "down"
+    let minutes = 20;
+
+    let $ = (id) => { return document.getElementById(id); };
+    let $get = (key) => { return localStorage.getItem(key); };
+    let $set = (key, value) => { localStorage.setItem(key, value); };
+
+    (() => {
+      let direction = $get('direction');
+      if (direction != "up" && direction != "down") {
+        $set('direction', "up");
+      }
+
+      let minutes = $get('minutes');
+      if ((minutes != 10) && (minutes != 20) && (minutes != 30)) {
+        $set('minutes', 20);
+      }
+    });
+
+    let render = (view) => {
+      $("thisRow").innerHTML = "" + view.this;
+      $("lastRow").innerHTML = "" + view.last;
+      $("nextRow").innerHTML = "" + view.next;
+    };
+
+    let nextView = () => {
+      if ($get('minutes') == 10) { // 10 has only one way to go: 20/up
+        let minutes = 20;
+
+        $set('minutes', minutes);
+        $set('direction', "up");
+
+        return {
+          this: minutes,
+          last: 10,
+          next: 30
+        }
+      } else if ($get('minutes') == 30) { // 30 has to go to: 20/down
+        let minutes = 20;
+
+        $set('minutes', minutes);
+        $set('direction', "down");
+
+        return {
+          this: minutes,
+          last: 30,
+          next: 10
+        }
+      } else { // at 20 so need to move based on direction
+        if ($get('direction') == "up") {
+          let minutes = 30;
+
+          $set('minutes', minutes);
+          $set('direction', "down");
+
+          return {
+            this: minutes,
+            last: 20,
+            next: 20
+          }
+        } else { // down
+          let minutes = 10;
+
+          $set('minutes', minutes);
+          $set('direction', "up");
+
+          return {
+            this: minutes,
+            last: 20,
+            next: 20
+          }
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', (_) => {
+      $("control").addEventListener("click", (e) => {
+        render(nextView());
+      });
+    });
+  </script>
 </body>
+
 </html>
